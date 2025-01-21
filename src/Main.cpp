@@ -3,11 +3,13 @@
 #include "../include/GraphGenerator.h"
 #include "../include/GraphColoring.h"
 #include "../graphics/GraphVisualizer.h"
-#include "../include/Chronometer.h"
-#include <iostream>
 #include "../graphics/MainWindow.h"
+#include <iostream>
+#include "../tests/TestRunner.h"
 
 int main(int argc, char *argv[]) {
+    runTests();
+    std::cout << "All tests passed! Starting GUI..." << std::endl;
     QApplication app(argc, argv);
     MainWindow window;
     window.setWindowTitle("Генератор графов");

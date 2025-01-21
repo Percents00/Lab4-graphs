@@ -20,10 +20,10 @@ public:
 
     private slots:
         void onGenerateButtonClicked();
-        void onColorButtonClicked();
-        void onPentagramButtonClicked();
-        void onCompleteGraphButtonClicked();
-        void onRingGraphButtonClicked();
+    void onColorButtonClicked();
+    void onPentagramButtonClicked();
+    void onCompleteGraphButtonClicked();
+    void onRingGraphButtonClicked();
 
 private:
     void drawGraph();

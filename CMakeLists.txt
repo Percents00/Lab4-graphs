@@ -23,7 +23,10 @@ add_executable(Lab4
         include/Chronometer.h
         src/Chronometer.cpp
         graphics/MainWindow.cpp
-        graphics/MainWindow.h)
+        graphics/MainWindow.h
+        tests/AllTests.cpp
+        tests/TestRunner.cpp
+        tests/TestRunner.h)
 
 target_link_libraries(Lab4 PRIVATE Qt6::Core Qt6::Widgets)
 target_compile_options(Lab4 PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
