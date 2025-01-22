@@ -11,22 +11,24 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 qt_standard_project_setup()
 
 add_executable(Lab4
-        src/Graph.cpp
-        include/Graph.h
         include/GraphGenerator.h
         src/GraphGenerator.cpp
         include/GraphColoring.h
         src/GraphColoring.cpp
         src/Main.cpp
-        graphics/GraphVisualizer.h
-        graphics/GraphVisualizer.cpp
         include/Chronometer.h
         src/Chronometer.cpp
         graphics/MainWindow.cpp
         graphics/MainWindow.h
-        tests/AllTests.cpp
+        include/IGraph.h
         tests/TestRunner.cpp
-        tests/TestRunner.h)
+        tests/TestRunner.h
+        include/DirectedGraph.h
+        include/UndirectedGraph.h
+        src/DirectedGraph.cpp
+        src/UndirectedGraph.cpp
+        graphics/GraphRenderer.h
+        graphics/GraphRenderer.cpp)
 
 target_link_libraries(Lab4 PRIVATE Qt6::Core Qt6::Widgets)
 target_compile_options(Lab4 PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)

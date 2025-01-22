@@ -1,131 +1,141 @@
 #include "MainWindow.h"
+#include "../include/DirectedGraph.h"
+#include "../include/UndirectedGraph.h"
+#include "../include/GraphGenerator.h"
+#include "../include/GraphColoring.h"
+#include "GraphRenderer.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QMessageBox>
-#include <QGraphicsTextItem>
-#include <cmath>
+#include <QGraphicsView>
 
 MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent), graph(0, false) {
+    : QMainWindow(parent), graph(nullptr) {
     QWidget* centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
     QVBoxLayout* mainLayout = new QVBoxLayout(centralWidget);
-    QHBoxLayout* inputLayout = new QHBoxLayout();
-    QLabel* verticesLabel = new QLabel("Количество вершин:", this);
-    inputLayout->addWidget(verticesLabel);
 
+    // Настройка элементов управления
+    QHBoxLayout* inputLayout = new QHBoxLayout();
     verticesSpinBox = new QSpinBox(this);
     verticesSpinBox->setRange(1, 100);
-    verticesSpinBox->setValue(10);
+    verticesSpinBox->setValue(5);
+    inputLayout->addWidget(new QLabel("Вершины:"));
     inputLayout->addWidget(verticesSpinBox);
-    QLabel* edgesLabel = new QLabel("Количество рёбер:", this);
-    inputLayout->addWidget(edgesLabel);
 
     edgesSpinBox = new QSpinBox(this);
     edgesSpinBox->setRange(1, 1000);
-    edgesSpinBox->setValue(15);
+    edgesSpinBox->setValue(7);
+    inputLayout->addWidget(new QLabel("Рёбра:"));
     inputLayout->addWidget(edgesSpinBox);
-    generateButton = new QPushButton("Генерировать граф", this);
+
+    graphTypeComboBox = new QComboBox(this);
+    graphTypeComboBox->addItem("Неориентированный");
+    graphTypeComboBox->addItem("Ориентированный");
+    inputLayout->addWidget(graphTypeComboBox);
+
+    generateButton = new QPushButton("Сгенерировать", this);
     inputLayout->addWidget(generateButton);
-    colorButton = new QPushButton("Раскрасить граф", this);
+
+    colorButton = new QPushButton("Раскрасить", this);
     inputLayout->addWidget(colorButton);
+
     pentagramButton = new QPushButton("Пентаграмма", this);
     inputLayout->addWidget(pentagramButton);
+
     completeGraphButton = new QPushButton("Полный граф", this);
     inputLayout->addWidget(completeGraphButton);
-    ringGraphButton = new QPushButton("Кольцевой граф", this);
+
+    ringGraphButton = new QPushButton("Кольцо", this);
     inputLayout->addWidget(ringGraphButton);
+
     mainLayout->addLayout(inputLayout);
-    graphicsView = new QGraphicsView(this);
+
     scene = new QGraphicsScene(this);
-    graphicsView->setScene(scene);
+    graphicsView = new QGraphicsView(scene, this);
+    graphicsView->setRenderHint(QPainter::Antialiasing);
     mainLayout->addWidget(graphicsView);
+
     connect(generateButton, &QPushButton::clicked, this, &MainWindow::onGenerateButtonClicked);
     connect(colorButton, &QPushButton::clicked, this, &MainWindow::onColorButtonClicked);
     connect(pentagramButton, &QPushButton::clicked, this, &MainWindow::onPentagramButtonClicked);
     connect(completeGraphButton, &QPushButton::clicked, this, &MainWindow::onCompleteGraphButtonClicked);
     connect(ringGraphButton, &QPushButton::clicked, this, &MainWindow::onRingGraphButtonClicked);
+
+    scene->setSceneRect(0, 0, 800, 600);
+    graphicsView->setFixedSize(800, 600);
+
+    setWindowTitle("Графы");
+    resize(800, 600);
 }
 
 MainWindow::~MainWindow() {
     delete scene;
+    delete graph;
 }
+
 void MainWindow::onGenerateButtonClicked() {
-    int vertices = verticesSpinBox->value();
-    int edges = edgesSpinBox->value();
-    if (edges < vertices - 1 || edges > vertices * (vertices - 1) / 2) {
+    const int vertices = verticesSpinBox->value();
+    const int edges = edgesSpinBox->value();
+    const bool isDirected = (graphTypeComboBox->currentIndex() == 1);
+
+    const int maxEdges = isDirected ? vertices * (vertices - 1) : vertices * (vertices - 1) / 2;
+    if (edges < vertices - 1 || edges > maxEdges) {
         QMessageBox::warning(this, "Ошибка", "Некорректное количество рёбер!");
         return;
     }
-    graph = GraphGenerator::generateRandomGraph(vertices, edges);
-    scene->clear();
+
+    delete graph;
+    graph = GraphGenerator::generateRandomGraph(vertices, edges, isDirected);
     drawGraph();
 }
+
 void MainWindow::onColorButtonClicked() {
-    if (graph.getVertices() == 0) {
+    if (!graph || graph->getVertices().empty()) {
         QMessageBox::warning(this, "Ошибка", "Сначала сгенерируйте граф!");
         return;
     }
-    colors = GraphColoring::colorGraph(graph);
-    scene->clear();
+
+    if (graph->isDirected()) {
+        QMessageBox::warning(this, "Ошибка", "Раскраска только для неориентированных графов!");
+        return;
+    }
+
+    colors = GraphColoring::colorGraph(dynamic_cast<const UndirectedGraph<int, int>&>(*graph));
     drawGraph();
+    scene->update();
 }
+
 void MainWindow::onPentagramButtonClicked() {
+    delete graph;
     graph = GraphGenerator::generatePentagram();
-    scene->clear();
+    if (!graph) {
+        QMessageBox::critical(this, "Ошибка", "Не удалось создать пентаграмму!");
+        return;
+    }
     drawGraph();
 }
+
 void MainWindow::onCompleteGraphButtonClicked() {
-    int vertices = verticesSpinBox->value();
-    graph = GraphGenerator::generateCompleteGraph(vertices);
-    scene->clear();
+    const int vertices = verticesSpinBox->value();
+    const bool isDirected = (graphTypeComboBox->currentIndex() == 1);
+    delete graph;
+    graph = GraphGenerator::generateCompleteGraph(vertices, isDirected);
     drawGraph();
 }
+
 void MainWindow::onRingGraphButtonClicked() {
-    int vertices = verticesSpinBox->value();
-    graph = GraphGenerator::generateRingGraph(vertices);
-    scene->clear();
+    const int vertices = verticesSpinBox->value();
+    const bool isDirected = (graphTypeComboBox->currentIndex() == 1);
+    delete graph;
+    graph = GraphGenerator::generateRingGraph(vertices, isDirected);
     drawGraph();
 }
+
 void MainWindow::drawGraph() {
-    drawEdges();
-    drawVertices();
-}
-void MainWindow::drawVertices() {
-    int vertices = graph.getVertices();
-    float radius = 20.0f;
-
-    for (int i = 0; i < vertices; ++i) {
-        float angle = 2 * M_PI * i / vertices;
-        float x = 400 + 200 * std::cos(angle) - radius;
-        float y = 300 + 200 * std::sin(angle) - radius;
-        QColor vertexColor = Qt::lightGray;
-        if (i < colors.size()) {
-            switch (colors[i] % 6) {
-                case 0: vertexColor = Qt::red; break;
-                case 1: vertexColor = Qt::green; break;
-                case 2: vertexColor = Qt::blue; break;
-                case 3: vertexColor = Qt::yellow; break;
-                case 4: vertexColor = Qt::cyan; break;
-                case 5: vertexColor = Qt::magenta; break;
-            }
-        }
-        QGraphicsEllipseItem* vertex = scene->addEllipse(x, y, 2 * radius, 2 * radius, QPen(Qt::black), QBrush(vertexColor));
-        QGraphicsTextItem* label = scene->addText(QString::number(i));
-        label->setPos(x + radius - 5, y + radius - 10);
-    }
-}
-void MainWindow::drawEdges() {
-    for (int i = 0; i < graph.getVertices(); ++i) {
-        for (int neighbor : graph.getAdjacencyList()[i]) {
-            float angle1 = 2 * M_PI * i / graph.getVertices();
-            float x1 = 400 + 200 * std::cos(angle1);
-            float y1 = 300 + 200 * std::sin(angle1);
-
-            float angle2 = 2 * M_PI * neighbor / graph.getVertices();
-            float x2 = 400 + 200 * std::cos(angle2);
-            float y2 = 300 + 200 * std::sin(angle2);
-            scene->addLine(x1, y1, x2, y2, QPen(Qt::black));
-        }
-    }
+    if (!graph) return;
+    scene->clear();
+    GraphRenderer renderer(scene);
+    renderer.renderGraph(graph, colors);
 }

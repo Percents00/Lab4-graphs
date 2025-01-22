@@ -1,15 +1,13 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QSpinBox>
 #include <QPushButton>
-#include <QGraphicsView>
-#include <QLabel>
-#include "../include/Graph.h"
-#include "../include/GraphGenerator.h"
-#include "../include/GraphColoring.h"
+#include <QComboBox>
+#include "../include/IGraph.h"
+
+class QGraphicsView;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -17,6 +15,7 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
+
 
     private slots:
         void onGenerateButtonClicked();
@@ -27,9 +26,7 @@ public:
 
 private:
     void drawGraph();
-    void drawVertices();
-    void drawEdges();
-
+    std::vector<int> colors;
     QSpinBox* verticesSpinBox;
     QSpinBox* edgesSpinBox;
     QPushButton* generateButton;
@@ -37,11 +34,9 @@ private:
     QPushButton* pentagramButton;
     QPushButton* completeGraphButton;
     QPushButton* ringGraphButton;
+    QComboBox* graphTypeComboBox;
     QGraphicsView* graphicsView;
     QGraphicsScene* scene;
 
-    Graph graph;
-    std::vector<int> colors;
+    IGraph<int, int>* graph;
 };
-
-#endif

@@ -1,13 +1,15 @@
 #include "../include/GraphColoring.h"
 #include <queue>
 #include <algorithm>
-std::vector<int> GraphColoring::colorGraph(const Graph& graph) {
-    int vertices = graph.getVertices();
+#include <iostream>
+
+std::vector<int> GraphColoring::colorGraph(const UndirectedGraph<int, int>& graph) {
+    int vertices = graph.getVertices().size();
     std::vector<int> colors(vertices, -1);
 
     for (int i = 0; i < vertices; ++i) {
         std::vector<bool> availableColors(vertices, true);
-        for (int neighbor : graph.getAdjacencyList()[i]) {
+        for (int neighbor : graph.getNeighbors(i)) {
             if (colors[neighbor] != -1) {
                 availableColors[colors[neighbor]] = false;
             }
@@ -20,11 +22,16 @@ std::vector<int> GraphColoring::colorGraph(const Graph& graph) {
         }
     }
 
+    std::cout << "Colors assigned: ";
+    for (int c : colors) std::cout << c << " ";
+    std::cout << std::endl;
+
     return colors;
 }
-bool GraphColoring::isColoringValid(const Graph& graph, const std::vector<int>& colors) {
-    for (int i = 0; i < graph.getVertices(); ++i) {
-        for (int neighbor : graph.getAdjacencyList()[i]) {
+
+bool GraphColoring::isColoringValid(const UndirectedGraph<int, int>& graph, const std::vector<int>& colors) {
+    for (int i = 0; i < graph.getVerticesCount(); ++i) {
+        for (int neighbor : graph.getNeighbors(i)) {
             if (colors[i] == colors[neighbor]) {
                 return false;
             }
@@ -32,6 +39,7 @@ bool GraphColoring::isColoringValid(const Graph& graph, const std::vector<int>& 
     }
     return true;
 }
+
 void GraphColoring::printColoring(const std::vector<int>& colors) {
     std::cout << "Graph coloring:" << std::endl;
     for (size_t i = 0; i < colors.size(); ++i) {
