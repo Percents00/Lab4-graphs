@@ -38,14 +38,9 @@ void GraphRenderer::drawVertices(const QMap<int, QPointF>& vertexPositions, cons
         QPointF pos = it.value();
         QColor color = Qt::lightGray;
         if (index < colors.size()) {
-            switch (colors[index] % 6) {
-                case 0: color = Qt::red; break;
-                case 1: color = Qt::green; break;
-                case 2: color = Qt::blue; break;
-                case 3: color = Qt::yellow; break;
-                case 4: color = Qt::cyan; break;
-                case 5: color = Qt::magenta; break;
-            }
+            int colorValue = colors[index];
+            int hue = (colorValue * 67) % 360;
+            color = QColor::fromHsl(hue, 255, 150);
         }
         QGraphicsEllipseItem* vertex = scene->addEllipse(
             pos.x() - radius,
